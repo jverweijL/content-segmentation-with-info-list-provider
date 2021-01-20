@@ -1,3 +1,5 @@
+[dev/24](https://youtu.be/K6uDFo8kilI?t=17827)
+
 ## Content segmentation with InfoListProvider
 
 
