@@ -39,9 +39,9 @@ public class JournalArticleSearch {
 
 	private static final String GLOBAL = "global";
 	private static final String GROUP_FIELD = "groupId";
-	private static final String SEGMENTADO = "segmentado";
-	private static final String ASSET_CATEGORY_FIELD = "assetCategoryTitles_pt_BR";
-	private static final long _48_HOURS_IN_MILLIS = 172800000L;
+	private static final String CATEGORY = "segmentation";
+	private static final String ASSET_CATEGORY_FIELD = "assetCategoryTitles_en_US";
+	private static final long _48_HOURS_IN_MILLIS = 48 * 60 * 60 * 1000;
 	private static final String MODIFIED_FIELD = "modified_sortable";
 	private static final String ASSET_TAG_NAMES = "assetTagNames";
 	private static final String ENTRY_CLASS_NAME = "entryClassName";
@@ -83,14 +83,17 @@ public class JournalArticleSearch {
 
 		if (user != null) {
 			List<AssetTag> userTags = assetTagLocalService.getTags(User.class.getName(), user.getUserId());
+			System.out.println(userTags.toString());
 			if (!isNullOrEmpty(userTags)) {
 				StringQuery assetTagNamesQuery = queries.string(buildAssetTagClauseOR(ASSET_TAG_NAMES, userTags));
 				MatchQuery groupIdQuery = queries.match(GROUP_FIELD, String.valueOf(groupId));
 				MatchQuery entryClassNameQuery = queries.match(ENTRY_CLASS_NAME, JournalArticle.class.getName());
-				MatchQuery assetCategoryQuery = queries.match(ASSET_CATEGORY_FIELD, SEGMENTADO);
+				MatchQuery assetCategoryQuery = queries.match(ASSET_CATEGORY_FIELD, CATEGORY);
 
 				RangeTermQuery modifiedDateRangeQuery = buildTwoDaysAgoRangeTermQuery();
 
+				/*articles = getJournalArticles(Arrays.asList(ENTRY_CLASS_PK, ASSET_TAG_NAMES), userTags, groupIdQuery,
+						entryClassNameQuery, modifiedDateRangeQuery, assetCategoryQuery, assetTagNamesQuery);*/
 				articles = getJournalArticles(Arrays.asList(ENTRY_CLASS_PK, ASSET_TAG_NAMES), userTags, groupIdQuery,
 						entryClassNameQuery, modifiedDateRangeQuery, assetCategoryQuery, assetTagNamesQuery);
 			}
@@ -98,16 +101,18 @@ public class JournalArticleSearch {
 		return articles;
 	}
 
-	private String buildAssetTagClauseOR(String field, List<AssetTag> values) {
+	private String buildAssetTagClauseOR(String field, List<AssetTag> tags) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(field + ":(");
-		for (int i = 0; i < values.size(); i++) {
-			sb.append("\"").append(values.get(i)).append("\"");
-			if (i < values.size() - 1) {
+		for (int i = 0; i < tags.size(); i++) {
+			sb.append("\"").append(tags.get(i).getName()).append("\"");
+			if (i < tags.size() - 1) {
 				sb.append(" OR ");
 			}
 		}
-		return sb.append(")").toString();
+		sb.append(")");
+		//System.out.println("Tag Query: " + sb.toString());
+		return sb.toString();
 	}
 
 	private SearchRequestBuilder buildSearchRequestBuilder(boolean setAndSearch, List<String> fields) {
