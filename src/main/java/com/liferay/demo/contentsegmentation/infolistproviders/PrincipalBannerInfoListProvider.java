@@ -1,4 +1,4 @@
-package br.com.mtanuri.liferay.contentsegmentation.infolistproviders;
+package com.liferay.demo.contentsegmentation.infolistproviders;
 
 import java.util.List;
 import java.util.Locale;
